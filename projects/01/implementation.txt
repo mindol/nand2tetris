@@ -1,4 +1,0 @@
-nand(a, b) // depth: 1, count: 1
-not(in) = nand(in, in) // depth: 1, count: 1
-and(a, b) = not(nand(a, b)) // depth: 2, count: 2
-or(a, b) = nand(not(a), not(b)) // depth: 2, count: 3

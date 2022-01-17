@@ -11,20 +11,33 @@
 
 // Put your code here.
     @2
-    M=0
+    M=0 // RAM[2] = 0
+    @f
+    M=1 // f = 1
+    @15
+    D=A
 (LOOP)
     @1
     D=M
-    @END
+    @f
+    D=D&M // bitwise AND(RAM[1] & f)
+    @NEXT
     D;JEQ
     @0
     D=M
     @2
-    M=D+M
+    M=D+M // RAM[2] += RAM[0]
+(NEXT)
+    @0
+    D=M
+    M=D+M // RAM[0] *= 2
+    @f
+    D=M
+    MD=D+M // f *= 2
     @1
-    M=M-1
+    D=D-M
     @LOOP
-    0;JMP
+    D;JLE
 (END)
     @END
     0;JMP

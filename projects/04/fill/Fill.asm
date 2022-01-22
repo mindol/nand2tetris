@@ -12,3 +12,42 @@
 // the screen should remain fully clear as long as no key is pressed.
 
 // Put your code here.
+
+// Infinite loop
+(INF_LOOP)
+    @24576
+    D=M
+    @IF_PRESSED
+    D;JNE
+    // Not Pressed
+    @16383
+    D=A
+    @i
+    M=D
+(NPLOOP)
+    @24575
+    D=D-A
+    @INF_LOOP
+    D;JGE
+    @i
+    AMD=M+1
+    M=0
+    @NPLOOP
+    0;JMP
+
+(IF_PRESSED)
+    // Pressed
+    @16383
+    D=A
+    @i
+    M=D
+(PLOOP)
+    @24575
+    D=D-A
+    @INF_LOOP
+    D;JGE
+    @i
+    AMD=M+1
+    M=-1
+    @PLOOP
+    0;JMP

@@ -39,5 +39,50 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    /* DECODER */
+    And(a=instruction[15], b=true, out=type);
+    And(a=instruction[12], b=true, out=a);
+    And(a=instruction[11], b=true, out=c1);
+    And(a=instruction[10], b=true, out=c2);
+    And(a=instruction[9], b=true, out=c3);
+    And(a=instruction[8], b=true, out=c4);
+    And(a=instruction[7], b=true, out=c5);
+    And(a=instruction[6], b=true, out=c6);
+    And(a=instruction[5], b=true, out=d1);
+    And(a=instruction[4], b=true, out=d2);
+    And(a=instruction[3], b=true, out=d3);
+    And(a=instruction[2], b=true, out=j1);
+    And(a=instruction[1], b=true, out=j2);
+    And(a=instruction[0], b=true, out=j3);
+    
+    /* Register A */
+    Mux16(a=instruction, b=outALU, sel=type, out=inA);
+    Not(in=d1, out=nd1);
+    Nand(a=type, b=nd1, out=loadA);
+    ARegister(in=inA, load=loadA, out=outA, out[0..14]=addressM);
+
+    /* Register D */
+    And(a=type, b=d2, out=loadB);
+    DRegister(in=outALU, load=loadB, out=outD);
+
+    /* ALU */
+    Mux16(a=outA, b=inM, sel=a, out=outB);
+    ALU(x=outD, y=outB, zx=c1, nx=c2, zy=c3, ny=c4, f=c5, no=c6,
+        out=outALU, out=outM, zr=zr, ng=ng);
+
+    /* PC */
+    And(a=ng, b=j1, out=term1);
+    And(a=zr, b=j2, out=term2);
+    Not(in=zr, out=nzr);
+    Not(in=ng, out=nng);
+    And(a=nzr, b=nng, out=ps);
+    And(a=ps, b=j3, out=term3);
+    Or(a=term1, b=term2, out=temp);
+    Or(a=temp, b=term3, out=res);
+    And(a=res, b=type, out=loadPC);
+    Not(in=loadPC, out=incPC);
+    PC(in=outA, inc=incPC, load=loadPC, reset=reset, out[0..14]=pc);
+
+    /* writeM */
+    And(a=type, b=d3, out=writeM);
 }

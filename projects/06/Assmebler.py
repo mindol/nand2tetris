@@ -1,39 +1,65 @@
 import sys
+from enum import Enum
+
+class Command(Enum):
+    A_COMMAND = 0
+    C_COMMAND = 1
+    L_COMMAND = 2
 
 class Parser:
     commands = []
+    current = ""
+    index = 0
     
     def __init__(self, filename):
-        try:
-            self.file = open(filename, 'r')
-        except:
-            print('Error during file opening')
-            raise
-        rawInput = self.file.readlines()
-
-        #for line in rawInput:
-        #    a = list(map(str.strip, line.split("//")))
-        #    print(a)
+        with open(filename, 'r') as file:
+            raw = file.readlines()
+            for line in raw:
+                p = "".join(line.split())   # remove all whitespaces
+                a = p.split("//")[0]        # ignore comments
+                if len(a) > 0:
+                    self.commands.append(a)
 
     def hasMoreCommands(self):
-        pass 
+        return self.index < len(self.commands)
+
     def advance(self):
-        pass
+        self.current = self.commands[self.index]
+        self.index += 1
+
     def commandType(self):
-        pass
-    def symbol(self):
-        pass
-    def dest(self):
-        pass
-    def comp(self):
-        pass
-    def jump(self):
-        pass
-    def __del__(self):
-        try:
-            self.file.close()
-        except:
-            pass
+        if self.current[0] == '@':
+            return Command.A_COMMAND
+        elif self.current[0] == '(':
+            return Command.L_COMMAND
+        else:
+            return Command.C_COMMAND
+
+    def symbol(self): # Only for A_COMMAND, L_COMMAND
+        if self.commandType() == Command.A_COMMAND:
+            return self.current[1:]
+        else:
+            return self.current[1:-1]
+
+    def dest(self): # Only for C_COMMAND
+        if '=' not in self.current:
+            return "null0"
+        else:
+            return self.current.split('=')[0]
+
+    def comp(self): # Only for C_COMMAND
+        now = self.current
+        if '=' in self.current:
+            now = now.split('=')[1]
+        if ';' in now:
+            now = now.split(';')[0]
+        return now
+
+    def jump(self): # Only for C_COMMAND
+        if ';' not in self.current:
+            return "null"
+        else:
+            return self.current.split(';')[-1]
 
 class Code:
     def dest(mnemonic):
@@ -84,6 +110,23 @@ def main():
     
     filename = sys.argv[1]
     p = Parser(filename)
+
+    result = []
+    while p.hasMoreCommands():
+        p.advance()
+        if p.commandType() == Command.C_COMMAND:
+            (dest, comp, jump) = (p.dest(), p.comp(), p.jump())
+            result.append('111' + Code.comp(comp) + Code.dest(dest) + Code.jump(jump))
+        elif p.commandType() == Command.A_COMMAND:
+            symbol = int(p.symbol())
+            result.append('0' + '{:015b}'.format(symbol))
+
+    filename = sys.argv[1].replace('.asm', '.hack')
+    with open(filename, 'w') as file:
+        for line in result:
+            file.write(line + '\n')
+
+    print('Successfully saved to', filename)
 
 main()
         

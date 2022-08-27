@@ -1,17 +1,17 @@
 import os, sys
-from misc import Ctype, ERROR
+from ctype import Ctype
 from parser import Parser
 from codewriter import CodeWriter
 
 def main():
     if len(sys.argv) < 2:
-        ERROR('[Arguments] Give an argument')
+        raise ValueError('[Arguments] Give an argument')
     elif len(sys.argv) > 2:
-        ERROR('[Arguments] Too many arguments')
+        raise ValueError('[Arguments] Too many arguments')
 
     arg = os.path.normpath(sys.argv[1])
     if not os.path.exists(arg):
-        ERROR("[File] No such file or directory")
+        raise FileNotFoundError("[File] No such file or directory")
 
     vm_files = []
     output_filename = ""
@@ -26,7 +26,7 @@ def main():
             if file.endswith(".vm"):
                 vm_files.append(os.path.join(arg, file))
         if len(vm_files) == 0:
-            ERROR("[Directory] Cannot find any .vm files in", arg)
+            raise FileNotFoundError("[Directory] Cannot find any .vm files in {}".format(arg))
         output_filename = os.path.join(arg, os.path.basename(arg) + ".asm")
 
     print("VM files:")

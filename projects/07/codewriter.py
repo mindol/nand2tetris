@@ -1,4 +1,4 @@
-from misc import Ctype, ERROR
+from ctype import Ctype
 
 class CodeWriter:
     def __init__(self, filename):
@@ -13,109 +13,68 @@ class CodeWriter:
         res = ""
 
         if command == "add": # 5 instructions
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "M=D+M",
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   M=D+M
+            """.split())
         elif command == "sub": # 5 instructions
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "M=M-D",
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   M=M-D
+            """.split())
         elif command == "neg": # 3 instructions
-            res = "\n".join((
-                "@SP",
-                "A=M-1",
-                "M=-M",
-            ))
+            res = "\n".join("""
+                @SP     A=M-1   M=-M
+            """.split())
         elif command == "eq": # 8 insts if x=y, 11 insts otherwise
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "MD=M-D",
-                "M=!M",
-                "@EQ_{}".format(self.label_count),
-                "D;JEQ",
-                "@SP",
-                "A=M-1",
-                "M=0",
-                "(EQ_{})".format(self.label_count),
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   MD=M-D  M=!M
+                @EQ_{0} D;JEQ
+                @SP     A=M-1   M=0
+                (EQ_{0})
+            """.format(self.label_count).split())
             self.label_count += 1
         elif command == "gt": # 10 insts if x>y, 12 insts otherwise
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "D=M-D",
-                "@GT_{}".format(self.label_count),
-                "D;JGT",
-                "@SP",
-                "A=M-1",
-                "M=0",
-                "@ENDGT_{}".format(self.label_count),
-                "0;JMP",
-                "(GT_{})".format(self.label_count),
-                "@SP",
-                "A=M-1",
-                "M=-1",
-                "(ENDGT_{})".format(self.label_count),
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   D=M-D
+                @GT_{0} D;JGT
+                @SP     A=M-1   M=0
+                @ENDGT_{0}  0;JMP
+                (GT_{0})
+                @SP     A=M-1   M=-1
+                (ENDGT_{0})
+            """.format(self.label_count).split())
             self.label_count += 1
         elif command == "lt": # 10 insts if x<y, 12 insts otherwise
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "D=M-D",
-                "@LT_{}".format(self.label_count),
-                "D;JLT",
-                "@SP",
-                "A=M-1",
-                "M=0",
-                "@ENDLT_{}".format(self.label_count),
-                "0;JMP",
-                "(LT_{})".format(self.label_count),
-                "@SP",
-                "A=M-1",
-                "M=-1",
-                "(ENDLT_{})".format(self.label_count),
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   D=M-D
+                @LT_{0} D;JLT
+                @SP     A=M-1   M=0
+                @ENDLT_{0}  0;JMP
+                (LT_{0})
+                @SP     A=M-1   M=-1
+                (ENDLT_{0})
+            """.format(self.label_count).split())
             self.label_count += 1
         elif command == "and": # 5 instructions
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "M=D&M",
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   M=D&M
+            """.split())
         elif command == "or": # 5 instructions
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "A=A-1",
-                "M=D|M",
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                A=A-1   M=D|M
+            """.split())
         elif command == "not": # 3 instructions
-            res = "\n".join((
-                "@SP",
-                "A=M-1",
-                "M=!M",
-            ))
+            res = "\n".join("""
+                @SP     A=M-1   M=!M
+            """.split())
         else:
-            ERROR("[writeArithmetic] Unknown token:", command)
+            raise ValueError("[writeArithmetic] Unknown token: {}".format(command))
         
         self.file.write(res + "\n")
     
@@ -129,29 +88,19 @@ class CodeWriter:
         # 6 insts otherwise
         if segment == "constant": 
             if index == 0 or index == 1:
-                res = "\n".join((
-                    "@SP",
-                    "AM=M+1",
-                    "A=A-1",
-                    "M={}".format(index)
-                ))
+                res = "\n".join("""
+                    @SP     AM=M+1  A=A-1   M={}
+                """.format(index).split())
             elif index == 2:
-                res = "\n".join((
-                    "@SP",
-                    "AM=M+1",
-                    "A=A-1",
-                    "MD=1",
-                    "M=D+M"
-                ))
+                res = "\n".join("""
+                    @SP     AM=M+1  A=A-1
+                    MD=1    M=D+M
+                """.split())
             else:
-                res = "\n".join((
-                    "@{}".format(index),
-                    "D=A",
-                    "@SP",
-                    "AM=M+1",
-                    "A=A-1",
-                    "M=D"
-                ))
+                res = "\n".join("""
+                    @{}     D=A
+                    @SP     AM=M+1  A=A-1   M=D
+                """.format(index).split())
 
         # [local, argument, this, that push]
         # 7 insts if index = 0 or 1
@@ -171,40 +120,29 @@ class CodeWriter:
                     "A=D+M",
                     "D=M"
                 ))
-            res += "\n" + "\n".join((
-                "@SP",
-                "AM=M+1",
-                "A=A-1",
-                "M=D"
-            ))
+            res += "\n" + "\n".join("""
+                @SP     AM=M+1  A=A-1   M=D
+            """.split())
 
         # [pointer, temp push]
         # 6 instructions
         elif segment in ["pointer", "temp"]:
             ptr = (3 if segment == "pointer" else 5) + index
-            res += "\n".join((
-                "@{}".format(ptr),
-                "D=M",
-                "@SP",
-                "AM=M+1",
-                "A=A-1",
-                "M=D"
-            ))
+            res = "\n".join("""
+                @{}     D=M
+                @SP     AM=M+1  A=A-1   M=D
+            """.format(ptr).split())
         
         # [static push]
         # 6 instructions
         elif segment == "static":
-            res += "\n".join((
-                "@{}.{}".format(self.filename, index),
-                "D=M",
-                "@SP",
-                "AM=M+1",
-                "A=A-1",
-                "M=D"
-            ))
+            res = "\n".join("""
+                @{}.{}  D=M
+                @SP     AM=M+1  A=A-1   M=D
+            """.format(self.filename, index).split())
 
         else:
-            ERROR("[writePush] Unknown token:", segment)
+            raise ValueError("[writePush] Unknown token: {}".format(segment))
 
         self.file.write(res + "\n")
     
@@ -231,46 +169,32 @@ class CodeWriter:
                     "M=D"
                 ))
             else:
-                res = "\n".join((
-                    "@{}".format(index),
-                    "D=A",
-                    "@{}".format(abbr[segment]),
-                    "D=D+M",
-                    "@R13",
-                    "M=D",
-                    "@SP",
-                    "AM=M-1",
-                    "D=M",
-                    "@R13",
-                    "A=M",
-                    "M=D"
-                ))
+                res = "\n".join("""
+                    @{}     D=A     @{}     D=D+M
+                    @R13    M=D
+                    @SP     AM=M-1  D=M
+                    @R13    A=M     M=D
+                """.format(index, abbr[segment]).split())
 
         # [pointer, temp pop]
         # 5 instructions
         elif segment in ["pointer", "temp"]:
             ptr = (3 if segment == "pointer" else 5) + index
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "@{}".format(ptr),
-                "M=D"
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                @{}     M=D
+            """.format(ptr).split())
 
         # [static pop]
         # 5 instructions
         elif segment == "static":
-            res = "\n".join((
-                "@SP",
-                "AM=M-1",
-                "D=M",
-                "@{}.{}".format(self.filename, index),
-                "M=D"
-            ))
+            res = "\n".join("""
+                @SP     AM=M-1  D=M
+                @{}.{}  M=D
+            """.format(self.filename, index).split())
 
         else:
-            ERROR("[writePop] Unknown token:", segment)
+            raise ValueError("[writePop] Unknown token: {}".format(segment))
 
         self.file.write(res + "\n")
 

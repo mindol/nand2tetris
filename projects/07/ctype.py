@@ -1,4 +1,3 @@
-import sys
 from enum import Enum
 
 class Ctype(Enum):
@@ -11,7 +10,3 @@ class Ctype(Enum):
     C_FUNCTION = 6
     C_RETURN = 7
     C_CALL = 8
-
-def ERROR(*argv):
-    print(*argv)
-    sys.exit()

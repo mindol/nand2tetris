@@ -1,4 +1,4 @@
-from misc import Ctype, ERROR
+from ctype import Ctype
 
 class Parser:
     def __init__(self, filename):
@@ -30,14 +30,14 @@ class Parser:
         elif opcode == "pop":
             return Ctype.C_POP
         else:
-            ERROR("[Parser::commandType] Unknown token:", opcode)
+            raise ValueError("[Parser::commandType] Unknown token: {}".format(opcode))
 
     def arg1(self):
         ctype = self.commandType()
         if ctype == Ctype.C_ARITHMETIC:
             return self.current[0]
         elif ctype == Ctype.C_RETURN:
-            ERROR("[Parser::arg1] Called with C_RETURN command")
+            raise TypeError("[Parser::arg1] Called with C_RETURN command")
         else:
             return self.current[1]
 
@@ -46,4 +46,4 @@ class Parser:
         if ctype in [Ctype.C_PUSH, Ctype.C_POP, Ctype.C_FUNCTION, Ctype.C_CALL]:
             return int(self.current[2])
         else:
-            ERROR("[Parser::arg2] Called with wrong command type")
+            raise TypeError("[Parser::arg2] Called with wrong command type")

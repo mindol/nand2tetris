@@ -1,74 +1,74 @@
-@SP
+@SP    // push 0
 AM=M+1
 A=A-1
 M=0
-@SP
+@SP    // pop LCL 0
 AM=M-1
 D=M
 @LCL
 A=M
 M=D
 (LOOP_START)
-@ARG
+@ARG    // push ARG 0
 A=M
 D=M
 @SP
 AM=M+1
 A=A-1
 M=D
-@LCL
+@LCL    // push LCL 0
 A=M
 D=M
 @SP
 AM=M+1
 A=A-1
 M=D
-@SP
+@SP    // add
 AM=M-1
 D=M
 A=A-1
 M=D+M
-@SP
+@SP    // pop LCL 0
 AM=M-1
 D=M
 @LCL
 A=M
 M=D
-@ARG
+@ARG    // push ARG 0
 A=M
 D=M
 @SP
 AM=M+1
 A=A-1
 M=D
-@SP
+@SP    // push 1
 AM=M+1
 A=A-1
 M=1
-@SP
+@SP    // sub
 AM=M-1
 D=M
 A=A-1
 M=M-D
-@SP
+@SP    // pop ARG 0
 AM=M-1
 D=M
 @ARG
 A=M
 M=D
-@ARG
+@ARG    // push ARG 0
 A=M
 D=M
 @SP
 AM=M+1
 A=A-1
 M=D
-@SP
+@SP    // if_goto LOOP_START
 AM=M-1
 D=M
 @LOOP_START
 D;JNE
-@LCL
+@LCL    // push LCL 0
 A=M
 D=M
 @SP

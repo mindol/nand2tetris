@@ -36,6 +36,14 @@ def main():
     print("\t" + output_filename)
 
     cw = CodeWriter(output_filename)
+
+    # Check if Sys.vm exists
+    for file in vm_files:
+        if os.path.basename(os.path.normpath(file)) == "Sys.vm":
+            cw.writeInit()
+            break
+    
+    # translate vm files
     for file in vm_files:
         cw.setFileName(os.path.basename(os.path.normpath(file)))
         p = Parser(file)
@@ -53,6 +61,12 @@ def main():
                 cw.writeGoto(p.arg1())
             elif p.commandType() == Ctype.C_IF:
                 cw.writeIf(p.arg1())
+            elif p.commandType() == Ctype.C_CALL:
+                cw.writeCall(p.arg1(), p.arg2())
+            elif p.commandType() == Ctype.C_FUNCTION:
+                cw.writeFunction(p.arg1(), p.arg2())
+            elif p.commandType() == Ctype.C_RETURN:
+                cw.writeReturn()
             else:
                 print("[command type] pass:", p.commandType)
 

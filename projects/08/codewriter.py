@@ -3,12 +3,16 @@ from raw_arithmetic import Arithmetic
 from raw_memoryaccess import MemoryAccess
 from raw_controlflow import ControlFlow
 from raw_functioncall import FunctionCall
+from textwrap import dedent
 
 class CodeWriter:
     def __init__(self, filename):
         self.file = open(filename, 'w')
         self.label_count = 0
         self.filename = None
+        self.current_functionname = None
+        self.current_function_numLocals = 0
+        self.return_address_count = {}
 
     def setFileName(self, filename):
         self.filename = filename
@@ -122,29 +126,78 @@ class CodeWriter:
     # [label labelname]
     # 0 instructions
     def writeLabel(self, labelname):
+        if self.current_functionname is not None:
+            labelname = self.current_functionname + '$' + labelname
+
         res = ControlFlow.label(labelname)
         self.file.write(res)
 
     # [goto labelname]
     # 2 instructions
     def writeGoto(self, labelname):
+        if self.current_functionname is not None:
+            labelname = self.current_functionname + '$' + labelname
+
         res = ControlFlow.goto(labelname)
         self.file.write(res)
 
     # [if-goto labelname]
     # 5 instructions
     def writeIf(self, labelname):
+        if self.current_functionname is not None:
+            labelname = self.current_functionname + '$' + labelname
+
         res = ControlFlow.if_goto(labelname)
         self.file.write(res)
 
+    # [call functionName numArgs]
+    # 35 instructions
     def writeCall(self, functionName, numArgs):
-        pass
+        if functionName not in self.return_address_count:
+            self.return_address_count[functionName] = 0
+        self.return_address_count[functionName] += 1
+        cnt = self.return_address_count[functionName]
 
+        return_labelname = "RETURN_ADDRESS_{}_of_{}".format(cnt, functionName)
+        res = FunctionCall.call(functionName, numArgs, return_labelname)
+        self.file.write(res)
+
+    # [return]
+    # 36 insts if numLocals = 0 or 1
+    # 37 insts if numLocals = 2
+    # 38 insts otherwise
     def writeReturn(self):
-        pass
+        res = FunctionCall._return(self.current_function_numLocals)
+        self.file.write(res)
 
+    # [function functionName numLocals(=k)]
+    # 4k insts if k <= 2
+    # (2k + 4) insts otherwise
     def writeFunction(self, functionName, numLocals):
-        pass
+        self.current_functionname = functionName
+        self.current_function_numLocals = numLocals
+
+        res = ""
+
+        if numLocals > 2:
+            res = FunctionCall.function_locals_2kp4(functionName, numLocals)
+        else:
+            res = FunctionCall.function_locals_4k(functionName, numLocals)
+        
+        self.file.write(res)
+
+    # Bootstrap Code
+    # 6 instructions
+    def writeInit(self):
+        res = dedent("""\
+            @256    // Bootstrap Code
+            D=A
+            @SP
+            M=D
+            @Sys.init
+            0;JMP
+        """)
+        self.file.write(res)
 
     def __del__(self):
         if self.file is not None:

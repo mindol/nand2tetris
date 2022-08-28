@@ -4,7 +4,7 @@ class Arithmetic:
 
     def add(): # 5 instructions
         return dedent("""\
-            @SP
+            @SP    // add
             AM=M-1
             D=M
             A=A-1
@@ -13,7 +13,7 @@ class Arithmetic:
     
     def sub(): # 5 instructions
         return dedent("""\
-            @SP
+            @SP    // sub
             AM=M-1
             D=M
             A=A-1
@@ -22,30 +22,30 @@ class Arithmetic:
 
     def neg(): # 3 instructions
         return dedent("""\
-            @SP
+            @SP    // neg
             A=M-1
             M=-M
         """)
 
     def eq(label_count): # 8 insts if x=y, 11 insts otherwise
         return dedent("""\
-            @SP
+            @SP    // eq
             AM=M-1
             D=M
             A=A-1
             MD=M-D
             M=!M
-            @EQ_{0}
+            @ENDEQ_{0}
             D;JEQ
             @SP
             A=M-1
             M=0
-            (EQ_{0})
+            (ENDEQ_{0})
         """.format(label_count))
 
     def gt(label_count): # 10 insts if x>y, 12 insts otherwise
         return dedent("""\
-            @SP
+            @SP    // gt
             AM=M-1
             D=M
             A=A-1
@@ -66,7 +66,7 @@ class Arithmetic:
     
     def lt(label_count): # 10 insts if x<y, 12 insts otherwise
         return dedent("""\
-            @SP
+            @SP    // lt
             AM=M-1
             D=M
             A=A-1
@@ -87,7 +87,7 @@ class Arithmetic:
     
     def _and(): # 5 instructions
         return dedent("""\
-            @SP
+            @SP    // and
             AM=M-1
             D=M
             A=A-1
@@ -96,7 +96,7 @@ class Arithmetic:
     
     def _or(): # 5 instructions
         return dedent("""\
-            @SP
+            @SP    // or
             AM=M-1
             D=M
             A=A-1
@@ -105,7 +105,7 @@ class Arithmetic:
     
     def _not(): # 3 instructions
         return dedent("""\
-            @SP
+            @SP    // not
             A=M-1
             M=!M
         """)

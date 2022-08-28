@@ -119,6 +119,33 @@ class CodeWriter:
 
         self.file.write(res)
 
+    # [label labelname]
+    # 0 instructions
+    def writeLabel(self, labelname):
+        res = ControlFlow.label(labelname)
+        self.file.write(res)
+
+    # [goto labelname]
+    # 2 instructions
+    def writeGoto(self, labelname):
+        res = ControlFlow.goto(labelname)
+        self.file.write(res)
+
+    # [if-goto labelname]
+    # 5 instructions
+    def writeIf(self, labelname):
+        res = ControlFlow.if_goto(labelname)
+        self.file.write(res)
+
+    def writeCall(self, functionName, numArgs):
+        pass
+
+    def writeReturn(self):
+        pass
+
+    def writeFunction(self, functionName, numLocals):
+        pass
+
     def __del__(self):
         if self.file is not None:
             self.file.close()

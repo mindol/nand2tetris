@@ -47,6 +47,12 @@ def main():
                 cw.writePush(p.arg1(), p.arg2())
             elif p.commandType() == Ctype.C_POP:
                 cw.writePop(p.arg1(), p.arg2())
+            elif p.commandType() == Ctype.C_LABEL:
+                cw.writeLabel(p.arg1())
+            elif p.commandType() == Ctype.C_GOTO:
+                cw.writeGoto(p.arg1())
+            elif p.commandType() == Ctype.C_IF:
+                cw.writeIf(p.arg1())
             else:
                 print("[command type] pass:", p.commandType)
 

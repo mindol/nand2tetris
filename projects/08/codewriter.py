@@ -11,7 +11,6 @@ class CodeWriter:
         self.label_count = 0
         self.filename = None
         self.current_functionname = None
-        self.current_function_numLocals = 0
         self.return_address_count = {}
 
     def setFileName(self, filename):
@@ -160,29 +159,26 @@ class CodeWriter:
 
         return_labelname = "RETURN_ADDRESS_{}_of_{}".format(cnt, functionName)
         res = FunctionCall.call(functionName, numArgs, return_labelname)
+        
         self.file.write(res)
 
     # [return]
-    # 36 insts if numLocals = 0 or 1
-    # 37 insts if numLocals = 2
-    # 38 insts otherwise
+    # 39 instructions
     def writeReturn(self):
-        res = FunctionCall._return(self.current_function_numLocals)
+        res = FunctionCall._return()
         self.file.write(res)
 
     # [function functionName numLocals(=k)]
     # 4k insts if k <= 2
     # (2k + 4) insts otherwise
     def writeFunction(self, functionName, numLocals):
-        self.current_functionname = functionName
-        self.current_function_numLocals = numLocals
-
         res = ""
-
         if numLocals > 2:
             res = FunctionCall.function_locals_2kp4(functionName, numLocals)
         else:
             res = FunctionCall.function_locals_4k(functionName, numLocals)
+
+        self.current_functionname = functionName
         
         self.file.write(res)
 
@@ -194,9 +190,8 @@ class CodeWriter:
             D=A
             @SP
             M=D
-            @Sys.init
-            0;JMP
         """)
+        res += FunctionCall.call("Sys.init", 0, "SYS_INIT_MAY_NOT_RETURN_HERE")
         self.file.write(res)
 
     def __del__(self):

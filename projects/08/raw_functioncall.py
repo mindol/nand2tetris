@@ -83,43 +83,22 @@ class FunctionCall:
             ({0})
         """.format(return_labelname, functionName, numArgs + 5))
 
-    # 5 insts if numLocals = 0 or 1
-    # 6 insts if numLocals = 2
-    # 7 insts otherwise
-    def _save_return_address_to_R13(numLocals):
-        res = ""
-
-        if numLocals == 0 or numLocals == 1:
-            res = dedent("""\
-                @ARG    // Save return address to R13
-                A=M{}
-            """.format("" if numLocals == 0 else "+1"))
-        elif numLocals == 2:
-            res = dedent("""\
-                @ARG    // Save return address to R13
-                A=M+1
-                A=A+1
-            """)
-        else:
-            res = dedent("""\
-                @{}    // Save return address to R13
-                D=A
-                @ARG
-                A=M+D
-            """.format(numLocals))
-        
-        res += dedent("""\
+    # 7 instructions
+    def _save_return_address_at_R13():
+        return dedent("""\
+            @5    // Save return address(located at LCL-5) at R13
+            D=A
+            @LCL
+            A=M-D
             D=M
             @R13
             M=D
         """)
         return res
 
-    # 36 insts if numLocals = 0 or 1
-    # 37 insts if numLocals = 2
-    # 38 insts otherwise
-    def _return(numLocals):
-        res = FunctionCall._save_return_address_to_R13(numLocals)
+    # 39 instructions
+    def _return():
+        res = FunctionCall._save_return_address_at_R13()
         res += dedent("""\
             @SP    // Save return value
             A=M-1
@@ -156,7 +135,8 @@ class FunctionCall:
             M=D
 
             @R13    // Jump to return address
-            A=M;JMP
+            A=M
+            0;JMP
         """)
 
         return res
